@@ -1,0 +1,7 @@
+{
+	"__note_speed": "Fast speed means it will speed up at the position that is unlikely to make you stuck, also dont set speed to high or you might still get stuck due to game anticheat or gold node havent even respawn yet",
+	"SPEED": 19,
+  "FAST_SPEED": 20
+  "__note_stuck": "STUCK_TIME_REQUIRED means if ur position doesnt change in 15sec it will considered stuck and will try to unstuck",
+  "STUCK_TIME_REQUIRED": 15,
+}
