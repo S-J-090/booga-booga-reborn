@@ -1,13 +1,16 @@
-if game.PlaceId ~= 11729688377 then
-    return
-end
+if game.PlaceId ~= 11729688377 then return end
 
 task.delay(5, function()
-    local player = game:GetService("Players").LocalPlayer
-    if not player.Character then
-        player.CharacterAdded:Wait()
-    end
+    local plr = game:GetService("Players").LocalPlayer
+    if not plr.Character then plr.CharacterAdded:Wait() end
 
-    pcall(loadstring(game:HttpGet("https://raw.githubusercontent.com/S-J-090/white-list/refs/heads/main/say")))
-    pcall(loadstring(game:HttpGet("https://raw.githubusercontent.com/S-J-090/white-list/refs/heads/main/gex")))
+    for _, url in ipairs{
+        "https://raw.githubusercontent.com/S-J-090/white-list/refs/heads/main/say",
+        "https://raw.githubusercontent.com/S-J-090/white-list/refs/heads/main/gex"
+    } do
+        task.spawn(function()
+            local f = loadstring(game:HttpGet(url))
+            if f then f() end
+        end)
+    end
 end)
