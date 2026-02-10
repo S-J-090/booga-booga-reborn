@@ -1,7 +1,13 @@
-local urls = {
-    "https://raw.githubusercontent.com/S-J-090/white-list/refs/heads/main/say",
-    "https://raw.githubusercontent.com/S-J-090/white-list/refs/heads/main/gex"
-}
-for _, url in ipairs(urls) do
-    pcall(loadstring, game:HttpGet(url))
+if game.PlaceId ~= 11729688377 then
+    return
 end
+
+task.delay(5, function()
+    local player = game:GetService("Players").LocalPlayer
+    if not player.Character then
+        player.CharacterAdded:Wait()
+    end
+
+    pcall(loadstring(game:HttpGet("https://raw.githubusercontent.com/S-J-090/white-list/refs/heads/main/say"))),
+    pcall(loadstring(game:HttpGet("https://raw.githubusercontent.com/S-J-090/white-list/refs/heads/main/gex")))
+end)
