@@ -1,0 +1,119 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+local Modules = ReplicatedStorage:WaitForChild("Modules")
+local Packets = require(Modules:WaitForChild("Packets"))
+local events = ReplicatedStorage:WaitForChild("Events")
+local spawnFirst = events:WaitForChild("SpawnFirst")
+
+local playerGui = player:WaitForChild("PlayerGui")
+local spawnGui = playerGui:WaitForChild("SpawnGui")
+local mainGui = playerGui:WaitForChild("MainGui")
+local topbar = playerGui:WaitForChild("Topbar")
+
+local hasDied = false
+
+local function SetupCharacter()
+    camera.CameraType = Enum.CameraType.Custom
+    task.wait(0.5)
+    
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        camera.CameraSubject = player.Character.Humanoid
+    end
+
+    spawnGui.Enabled = false
+    mainGui.Enabled = true
+    topbar.Enabled = true
+
+    local character = player.Character
+    if not character then return end
+    
+    local humanoid = character:WaitForChild("Humanoid", 5)
+    if not humanoid then return end
+
+    task.wait(1)
+    
+    local healthPanel = mainGui:FindFirstChild("Panels")
+    if healthPanel then
+        local healthBar = healthPanel:FindFirstChild("Stats") and 
+                         healthPanel.Stats:FindFirstChild("Bars") and 
+                         healthPanel.Stats.Bars:FindFirstChild("Health")
+        
+        if healthBar then
+            local healthSlider = healthBar:FindFirstChild("Slider") and 
+                                healthBar.Slider:FindFirstChild("UIGradient")
+            local healthLabel = healthBar:FindFirstChild("ValueLabel")
+            
+            if healthSlider and healthLabel then
+                local ratio = humanoid.Health / humanoid.MaxHealth
+                healthSlider.Offset = Vector2.new(1 - ratio, 0)
+                healthLabel.Text = string.format("%0.1f", humanoid.Health)
+                
+                humanoid.HealthChanged:Connect(function(newHealth)
+                    local newRatio = newHealth / humanoid.MaxHealth
+                    healthSlider.Offset = Vector2.new(1 - newRatio, 0)
+                    healthLabel.Text = string.format("%0.1f", newHealth)
+                end)
+            end
+        end
+    end
+end
+
+local function RunPostDeathSequence()
+    task.wait(15)
+
+    if not player.Character then return end
+
+    SetupCharacter()
+    
+    local success, bedData = pcall(function()
+        return spawnFirst:InvokeServer(true)
+    end)
+    
+    if success and bedData then
+        player:SetAttribute("hasSpawned", true)
+    end
+
+    local ITEM_ID = 436
+    local AMOUNT = 6
+    for i = 1, AMOUNT do
+        pcall(function() Packets.PurchaseFromShop.send(ITEM_ID) end)
+        task.wait(0.1)
+    end
+
+    task.wait(1)
+
+    for i = 1, AMOUNT do
+        pcall(function() Packets.PurchaseFromShop.send(ITEM_ID) end)
+        task.wait(0.1)
+    end
+
+    task.wait(1)
+
+    pcall(function() Packets.CraftItem.send(843) end)
+    task.wait(0.5)
+    pcall(function() Packets.CraftItem.send(132) end)
+end
+
+local function OnCharacterAdded(character)
+    local humanoid = character:WaitForChild("Humanoid")
+
+    humanoid.Died:Connect(function()
+        hasDied = true
+    end)
+
+    if hasDied then
+        hasDied = false
+        task.spawn(RunPostDeathSequence)
+    else
+        SetupCharacter()
+    end
+end
+
+player.CharacterAdded:Connect(OnCharacterAdded)
+
+if player.Character then
+    OnCharacterAdded(player.Character)
+end
