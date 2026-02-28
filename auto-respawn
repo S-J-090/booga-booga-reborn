@@ -76,19 +76,16 @@ local function RunPostDeathSequence()
         player:SetAttribute("hasSpawned", true)
     end
 
-    local ITEM_ID = 436
-    local AMOUNT = 6
+local ITEMS_TO_BUY = {436, 377}
+local AMOUNT = 6
+
+for _, ITEM_ID in ipairs(ITEMS_TO_BUY) do
     for i = 1, AMOUNT do
         pcall(function() Packets.PurchaseFromShop.send(ITEM_ID) end)
         task.wait(0.1)
     end
-
-    task.wait(2)
-
-    for i = 1, AMOUNT do
-        pcall(function() Packets.PurchaseFromShop.send(ITEM_ID) end)
-        task.wait(0.1)
-    end
+    task.wait(0.5)
+end
 
     task.wait(1)
 
