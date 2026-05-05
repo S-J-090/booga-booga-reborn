@@ -1,5 +1,5 @@
 {
-  "SPEED": 18,
+  "SPEED": 17.5,
   "__note_stuck": "STUCK_TIME_REQUIRED means if ur position doesnt change in 10sec(dont change it to be lower than 10 sec) it will considered stuck and will try to unstuck",
   "STUCK_TIME_REQUIRED": 10,
   "__note_webhook": "WEBHOOK_URL will post the start and finished msg STUCK_WEBHOOK_URL will post only the stuck msg",
