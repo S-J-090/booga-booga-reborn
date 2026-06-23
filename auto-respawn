@@ -1,3 +1,5 @@
+task.wait(3)
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
@@ -15,6 +17,7 @@ local topbar = playerGui:WaitForChild("Topbar")
 
 local hasDied = false
 local isFirstSpawn = true
+
 local function SetupHealthBarTracking(character)
     local humanoid = character:WaitForChild("Humanoid", 5)
     if not humanoid then return end
@@ -44,28 +47,61 @@ local function SetupHealthBarTracking(character)
         end
     end
 end
-local function InitializeStartup(character)
-    camera.CameraType = Enum.CameraType.Custom
-    task.wait(0.5)
-    
-    if character and character:FindFirstChild("Humanoid") then
-        camera.CameraSubject = character.Humanoid
-    end
 
-    spawnGui.Enabled = false
-    mainGui.Enabled = true
-    topbar.Enabled = true
-    local success, bedData = pcall(function()
-        return spawnFirst:InvokeServer(true)
-    end)
-    
-    if success and bedData then
-        player:SetAttribute("hasSpawned", true)
-    end
-
-    task.wait(1)
-    SetupHealthBarTracking(character)
+local function isWithinRange(pos1, pos2, range)
+    return math.abs(pos1.X - pos2.X) <= range and
+           math.abs(pos1.Y - pos2.Y) <= range and
+           math.abs(pos1.Z - pos2.Z) <= range
 end
+
+local function InitializeStartup(character)
+    local rootPart = character:WaitForChild("HumanoidRootPart", 10)
+    if not rootPart then return end
+    
+    local initialPosition = rootPart.Position
+
+    while true do
+        camera.CameraType = Enum.CameraType.Custom
+        task.wait(0.5)
+        
+        if character and character:FindFirstChild("Humanoid") then
+            camera.CameraSubject = character.Humanoid
+        end
+
+        spawnGui.Enabled = false
+        mainGui.Enabled = true
+        topbar.Enabled = true
+        
+        local success, bedData = pcall(function()
+            return spawnFirst:InvokeServer(true)
+        end)
+        
+        if success and bedData then
+            player:SetAttribute("hasSpawned", true)
+        end
+
+        task.wait(1)
+        SetupHealthBarTracking(character)
+
+        task.wait(60)
+
+        local currentCharacter = player.Character
+        local currentRoot = currentCharacter and currentCharacter:FindFirstChild("HumanoidRootPart")
+        
+        if currentRoot then
+            if not isWithinRange(initialPosition, currentRoot.Position, 5) then
+                print("Position changed beyond 5 studs. Breaking loop.")
+                break
+            else
+                print("Player still stuck at initial position. Re-initializing...")
+                initialPosition = currentRoot.Position 
+            end
+        else
+            print("HumanoidRootPart missing, retrying loop...")
+        end
+    end
+end
+
 local function RunPostDeathSequence()
     task.wait(15)
 
@@ -100,6 +136,7 @@ local function RunPostDeathSequence()
 
     SetupHealthBarTracking(character)
 end
+
 local function OnCharacterAdded(character)
     local humanoid = character:WaitForChild("Humanoid")
 
@@ -121,3 +158,4 @@ player.CharacterAdded:Connect(OnCharacterAdded)
 if player.Character then
     OnCharacterAdded(player.Character)
 end
+
