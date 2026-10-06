@@ -1,6 +1,6 @@
 {
   "GOLD_LIMIT": 20100,
-  "COIN_LIMIT": "250k",
+  "COIN_LIMIT": "125k",
   "SPEED": 16.2,
   "STUCK_TIME_REQUIRED": 15,
   "MODE": "Gold"
