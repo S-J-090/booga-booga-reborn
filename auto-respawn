@@ -1,4 +1,4 @@
-task.wait(100)
+task.wait(95)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualInputManager = game:GetService("VirtualInputManager")
