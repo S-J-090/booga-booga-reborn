@@ -48,7 +48,10 @@ end
 local function simulateRealBedButtonClick()
     pcall(function()
         local spawnGui = playerGui:FindFirstChild("SpawnGui")
-        if not spawnGui then return end
+        if not spawnGui then 
+            print("[Debug] SpawnGui not found yet.")
+            return 
+        end
         
         local customization = spawnGui:FindFirstChild("Customization")
         local bedBtn = customization and customization:FindFirstChild("BedButton")
@@ -64,6 +67,10 @@ local function simulateRealBedButtonClick()
             VirtualInputManager:SendMouseButtonEvent(targetX, targetY, 0, true, game, 1)
             task.wait(0.05)
             VirtualInputManager:SendMouseButtonEvent(targetX, targetY, 0, false, game, 1)
+            
+            print("[Debug] Successfully clicked BedButton at X:", targetX, "Y:", targetY)
+        else
+            print("[Debug] BedButton not visible on screen yet.")
         end
     end)
 end
