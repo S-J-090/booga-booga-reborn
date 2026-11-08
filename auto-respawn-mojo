@@ -32,7 +32,7 @@ end
 
 task.spawn(function()
 	while true do
-		task.wait(50)
+		task.wait(30)
 		
 		local character = player.Character
 		if character and character:FindFirstChild("HumanoidRootPart") then
