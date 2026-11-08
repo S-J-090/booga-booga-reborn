@@ -1,21 +1,20 @@
 task.wait(100)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local GuiService = game:GetService("GuiService")
+
 local player = Players.LocalPlayer
-local camera = workspace.CurrentCamera
 
 local Modules = ReplicatedStorage:WaitForChild("Modules")
-local Packets = require(Modules:WaitForChild("Packets"))
-local events = ReplicatedStorage:WaitForChild("Events")
-local spawnFirst = events:WaitForChild("SpawnFirst")
+local Packets = require(Modules:WaitForChild("util"):WaitForChild("Packets"))
 
 local playerGui = player:WaitForChild("PlayerGui")
-local spawnGui = playerGui:WaitForChild("SpawnGui")
 local mainGui = playerGui:WaitForChild("MainGui")
-local topbar = playerGui:WaitForChild("Topbar")
 
 local hasDied = false
 local isFirstSpawn = true
+
 local function SetupHealthBarTracking(character)
     local humanoid = character:WaitForChild("Humanoid", 5)
     if not humanoid then return end
@@ -23,12 +22,12 @@ local function SetupHealthBarTracking(character)
     local healthPanel = mainGui:FindFirstChild("Panels")
     if healthPanel then
         local healthBar = healthPanel:FindFirstChild("Stats") and 
-                         healthPanel.Stats:FindFirstChild("Bars") and 
-                         healthPanel.Stats.Bars:FindFirstChild("Health")
+                           healthPanel.Stats:FindFirstChild("Bars") and 
+                           healthPanel.Stats.Bars:FindFirstChild("Health")
         
         if healthBar then
             local healthSlider = healthBar:FindFirstChild("Slider") and 
-                                healthBar.Slider:FindFirstChild("UIGradient")
+                                  healthBar.Slider:FindFirstChild("UIGradient")
             local healthLabel = healthBar:FindFirstChild("ValueLabel")
             
             if healthSlider and healthLabel then
@@ -45,43 +44,46 @@ local function SetupHealthBarTracking(character)
         end
     end
 end
-local function InitializeStartup(character)
-    camera.CameraType = Enum.CameraType.Custom
-    task.wait(0.5)
-    
-    if character and character:FindFirstChild("Humanoid") then
-        camera.CameraSubject = character.Humanoid
-    end
 
-    spawnGui.Enabled = false
-    mainGui.Enabled = true
-    topbar.Enabled = true
-    local success, bedData = pcall(function()
-        return spawnFirst:InvokeServer(true)
+local function simulateRealBedButtonClick()
+    pcall(function()
+        local spawnGui = playerGui:FindFirstChild("SpawnGui")
+        if not spawnGui then return end
+        
+        local customization = spawnGui:FindFirstChild("Customization")
+        local bedBtn = customization and customization:FindFirstChild("BedButton")
+        
+        if bedBtn and bedBtn.AbsoluteSize.X > 0 then
+            local absPos = bedBtn.AbsolutePosition
+            local absSize = bedBtn.AbsoluteSize
+            local guiInset = GuiService:GetGuiInset()
+            
+            local targetX = absPos.X + (absSize.X / 2)
+            local targetY = absPos.Y + (absSize.Y / 2) + guiInset.Y
+            
+            VirtualInputManager:SendMouseButtonEvent(targetX, targetY, 0, true, game, 1)
+            task.wait(0.05)
+            VirtualInputManager:SendMouseButtonEvent(targetX, targetY, 0, false, game, 1)
+        end
     end)
-    
-    if success and bedData then
-        player:SetAttribute("hasSpawned", true)
-    end
+end
+
+local function InitializeStartup(character)
+    task.wait(0.5)
+    simulateRealBedButtonClick()
 
     task.wait(1)
     SetupHealthBarTracking(character)
 end
+
 local function RunPostDeathSequence()
     task.wait(15)
 
     local character = player.Character
     if not character then return end
 
-    camera.CameraType = Enum.CameraType.Custom
-    task.wait(0.5)
-    if character:FindFirstChild("Humanoid") then
-        camera.CameraSubject = character.Humanoid
-    end
+    simulateRealBedButtonClick()
 
-    spawnGui.Enabled = false
-    mainGui.Enabled = true
-    topbar.Enabled = true
     local ITEMS_TO_BUY = {436, 377}
     local AMOUNT = 6
 
@@ -101,6 +103,7 @@ local function RunPostDeathSequence()
 
     SetupHealthBarTracking(character)
 end
+
 local function OnCharacterAdded(character)
     local humanoid = character:WaitForChild("Humanoid")
 
